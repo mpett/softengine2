@@ -65,6 +65,20 @@ var SoftEngine;
                 this.putPixel(point.x, point.y, new BABYLON.Color4(1, 1, 0, 1));
             }
         };
+        Device.prototype.drawLine = function (point0, point1) {
+            var dist = point0.subtract(point1).length();
+            // If the distance between two points is less then zero we are exiting.
+            if (dist < 2) {
+                return;
+            }
+            // Find the middle point between the first and the second point.
+            var middlePoint = point0.add((point1.subtract(point0)).scale(0.5));
+            // Draw this point on the screen.
+            this.drawPoint(middlePoint);
+            // Recursion between first and middle point and between middle and second point.
+            this.drawLine(point0, middlePoint);
+            this.drawLine(middlePoint, point1);
+        };
         // The main method of the engine that re-computes each vertex projection during each frame.
         Device.prototype.render = function (camera, meshes) {
             var viewMatrix = BABYLON.Matrix.LookAtLH(camera.Position, camera.Target, BABYLON.Vector3.Up());
@@ -81,6 +95,12 @@ var SoftEngine;
                     var projectedPoint = this.project(cMesh.Vertices[indexVertices], transformMatrix);
                     // Then draw it on the screen.
                     this.drawPoint(projectedPoint);
+                }
+                // Draw lines.
+                for (var i = 0; i < cMesh.Vertices.length - 1; i++) {
+                    var point0 = this.project(cMesh.Vertices[i], transformMatrix);
+                    var point1 = this.project(cMesh.Vertices[i + 1], transformMatrix);
+                    this.drawLine(point0, point1);
                 }
             }
         };
