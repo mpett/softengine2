@@ -1,6 +1,12 @@
 ///<reference path="babylon.math.ts"/>
 
 module SoftEngine {
+    export interface Face {
+        A: number;
+        B: number;
+        C: number;
+    }
+
     export class Camera {
         Position: BABYLON.Vector3;
         Target: BABYLON.Vector3;
@@ -15,9 +21,11 @@ module SoftEngine {
         Position: BABYLON.Vector3;
         Rotation: BABYLON.Vector3;
         Vertices: BABYLON.Vector3[];
+        Faces: Face[];
 
-        constructor(public name: string, verticesCount: number) {
+        constructor(public name: string, verticesCount: number, facesCount: number) {
             this.Vertices = new Array(verticesCount);
+            this.Faces = new Array(facesCount);
             this.Rotation = BABYLON.Vector3.Zero();
             this.Position = BABYLON.Vector3.Zero();
         }
@@ -86,8 +94,8 @@ module SoftEngine {
         public drawLine(point0: BABYLON.Vector2, point1: BABYLON.Vector2): void {
             var dist = point0.subtract(point1).length();
 
-            // If the distance between two points is less then zero we are exiting.
-            if (dist < 2) {
+            // If the distance between two points is less than zero we are exiting.
+            if (dist < 1) {
                 return;
             }
 
@@ -125,6 +133,20 @@ module SoftEngine {
                     var point0 = this.project(cMesh.Vertices[i], transformMatrix);
                     var point1 = this.project(cMesh.Vertices[i+1], transformMatrix);
                     this.drawLine(point0, point1);
+                }
+
+                // Draw faces.
+                for (var indexFaces = 0; indexFaces < cMesh.Faces.length; indexFaces++) {
+                    var currentFace = cMesh.Faces[indexFaces];
+                    var vertexA = cMesh.Vertices[currentFace.A];
+                    var vertexB = cMesh.Vertices[currentFace.B];
+                    var vertexC = cMesh.Vertices[currentFace.C];
+                    var pixelA = this.project(vertexA, transformMatrix);
+                    var pixelB = this.project(vertexB, transformMatrix);
+                    var pixelC = this.project(vertexC, transformMatrix);
+                    this.drawLine(pixelA, pixelB);
+                    this.drawLine(pixelB, pixelC);
+                    this.drawLine(pixelC, pixelA);
                 }
             }
         }
