@@ -95,7 +95,7 @@ module SoftEngine {
             var dist = point0.subtract(point1).length();
 
             // If the distance between two points is less than zero we are exiting.
-            if (dist < 1) {
+            if (dist < 0.5) {
                 return;
             }
 
@@ -106,6 +106,41 @@ module SoftEngine {
             // Recursion between first and middle point and between middle and second point.
             this.drawLine(point0, middlePoint);
             this.drawLine(middlePoint, point1);
+        }
+
+        public drawBline(point0: BABYLON.Vector2, point1: BABYLON.Vector2): void {
+            var x0 = point0.x >> 0;
+            var y0 = point0.y >> 0;
+            var x1 = point1.x >> 0;
+            var y1 = point1.y >> 0;
+            
+            var dx = Math.abs(x1 - x0);
+            var dy = Math.abs(y1 - y0);
+            
+            var sx = (x0 < x1) ? 1 : -1;
+            var sy = (y0 < y1) ? 1 : -1;
+            
+            var err = dx - dy;
+
+            while (true) {
+                this.drawPoint(new BABYLON.Vector2(x0, y0));
+                
+                if ((x0 == x1) && (y0 == y1)) {
+                    break;
+                }
+                
+                var e2 = 2 * err;
+
+                if (e2 > -dy) {
+                    err -= dy;
+                    x0 += sx;                    
+                }
+
+                if (e2 < dx) {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
         }
 
         // The main method of the engine that re-computes each vertex projection during each frame.
@@ -132,7 +167,7 @@ module SoftEngine {
                 for (var i = 0; i < cMesh.Vertices.length - 1; i++) {
                     var point0 = this.project(cMesh.Vertices[i], transformMatrix);
                     var point1 = this.project(cMesh.Vertices[i+1], transformMatrix);
-                    this.drawLine(point0, point1);
+                    this.drawBline(point0, point1);
                 }
 
                 // Draw faces.
@@ -144,9 +179,9 @@ module SoftEngine {
                     var pixelA = this.project(vertexA, transformMatrix);
                     var pixelB = this.project(vertexB, transformMatrix);
                     var pixelC = this.project(vertexC, transformMatrix);
-                    this.drawLine(pixelA, pixelB);
-                    this.drawLine(pixelB, pixelC);
-                    this.drawLine(pixelC, pixelA);
+                    this.drawBline(pixelA, pixelB);
+                    this.drawBline(pixelB, pixelC);
+                    this.drawBline(pixelC, pixelA);
                 }
             }
         }
